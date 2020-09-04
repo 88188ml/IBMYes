@@ -26,32 +26,98 @@ EOF
 
     cat >  ${SH_PATH}/IBMYes/v2ray-cloudfoundry/v2ray/config.json  << EOF
     {
-        "inbounds": [
-            {
-                "port": 8080,
-                "protocol": "vmess",
-                "settings": {
-                    "clients": [
-                        {
-                            "id": "3eeffc69-c15d-4158-9879-e889b7ee09f1",
-                            "alterId": 4
-                        }
-                    ]
-                },
-                "streamSettings": {
-                    "network":"ws",
-                    "wsSettings": {
-                        "path": "ws-ningxi"
-                    }
-                }
-            }
+  "inbounds": [
+    {
+      "port": "8080",        /* this is the server port for client */
+      #"listen": "127.0.0.1",
+      "protocol": "dokodemo-door",
+      "tag": "wsdoko",
+      "settings": {
+        "address": "v1.mux.cool",   /* don't change!!! */
+        "followRedirect": false,
+        "network": "tcp"
+      },
+      "streamSettings": {
+        "network": "ws",      /* same as v2ray-plugin */
+        "wsSettings": {
+          "path": "/ss-ningxi"
+        }
+      }
+    },
+    {
+      "port": 9015,   /* this port is not used, but you need to specific */
+      "protocol": "shadowsocks",
+      "settings": {
+        "method": "chacha20-ietf-poly1305",
+        "ota": false,
+        "password": "messtls",
+        "network": "tcp,udp"
+      },
+      "streamSettings": {
+        "network": "domainsocket"
+      }
+    },
+    {
+		"port": 22202,
+		#"listen": "127.0.0.1",
+		"protocol": "vmess",
+		"tag": "proxy",
+		"settings": {
+			"clients": [{
+				"id": "e88a644c-c29f-4d09-91d2-44686b5006c3",
+				"alterId": 4
+			}]
+		},
+		"streamSettings": {
+			"network": "ws",
+			"wsSettings": {
+				"path": "/ws-ningxi"
+			}
+		}
+	}
+  ],
+  "outbounds": [
+    {
+      "protocol": "freedom",
+      "settings": {},
+      "tag": "direct"
+    },
+    {
+      "protocol": "blackhole",
+      "settings": {},
+      "tag": "blocked"
+    },
+    {
+      "protocol": "freedom",
+      "tag": "ssmux",
+      "streamSettings": {
+        "network": "domainsocket"
+      }
+    }
+  ],
+  "transport": {
+    "dsSettings": {
+      "path": "/var/run/ss-loop.sock"  /* the directory must exist before v2ray starts */
+    }
+  },
+  "routing": {
+    "rules": [
+      {
+        "type": "field",
+        "inboundTag": [
+          "wsdoko"
         ],
-        "outbounds": [
-            {
-                "protocol": "freedom",
-                "settings": {}
-            }
-        ]
+        "outboundTag": "ssmux"
+      },
+      {
+        "type": "field",
+        "ip": [
+          "geoip:private"
+        ],
+        "outboundTag": "blocked"
+      }
+    ]
+  }
     }
 EOF
     echo "配置完成。"
